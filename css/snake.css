@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css?family=VT323');
+
+html, body {
+	font: normal 12px Lato, Verdana, Arial, sans-serif;
+}
+
+ul, ol, li {
+	padding: 0;
+	margin: 0;
+}
+
+.gameboard {
+
+}
+.gameboard canvas {
+	border: 1px solid #000;
+}
+.scoreboard {
+	font: normal 2em VT323, monospace;
+	border: 2px solid #000;
+	background-color: #0a0;
+	color: #fff;
+	width: 120px;
+	padding: 10px;
+	margin: 10px;
+	float: left;
+}
+
+.scoreboard h2 {
+	font-size: 1em;
+	text-transform: uppercase;
+}

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport"
+		  content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<link rel="stylesheet" href="css/snake.css" />
+	<title>JS Snake</title>
+</head>
+<body>
+<header>
+	<h1>Javascript Snake Game</h1>
+</header>
+<section class="gameboard">
+	<section class="scoreboard">
+		Score: <span id="score">0</span>
+		<section id="highscore">
+			<h2>Highscore</h2>
+			<ol>
+				<li>0</li>
+				<li>0</li>
+				<li>0</li>
+				<li>0</li>
+				<li>0</li>
+			</ol>
+		</section>
+	</section>
+	<canvas id="snake"></canvas>
+	<section class="settings">
+		Level:
+		<select name="level" id="level">
+			<option value="1">1</option>
+			<option value="2">2</option>
+			<option value="3">3</option>
+			<option value="4">4</option>
+			<option value="5">5</option>
+		</select>
+
+	</section>
+</section>
+<script src="js/snake.js"></script>
+</body>
+</html>
