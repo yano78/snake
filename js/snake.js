@@ -22,6 +22,7 @@ class Snake {
 		this.body = [{x: 5, y: 5}];
 		this.color = '#888';
 		this.direction = 'right';
+		this.grow = 0;
 		this.newDirection = null;
 		this.alive = true;
 	}
@@ -67,8 +68,13 @@ class Snake {
 		nextHead.x = ((nextHead.x % w) + w) % w;
 		nextHead.y = ((nextHead.y % h) + h) % h;
 
+		if (this.grow > 0) {
+			this.grow--;
+		} else {
+			this.erase(this.body.pop());
+		}
+
 		this.body.unshift(nextHead);
-		this.erase(this.body.pop());
 
 		this.draw();
 	}
@@ -93,6 +99,15 @@ class Game {
 		this.createFood();
 		while (true) {
 			this.snake.move();
+
+			if (this.food) {
+				if (this.snake.collision(this.snake.head, this.food)) {
+					this.snake.grow++;
+					this.updateScore();
+					this.food = null;
+					this.createFood();
+				}
+			}
 
 			await this.wait(200);
 		}
@@ -139,6 +154,11 @@ class Game {
 		ctx.fillRect(this.food.x * b, this.food.y * b, b, b);
 	}
 
+	updateScore(){
+		const score = document.getElementById("score");
+		this.score++;
+		score.innerText = this.score;
+	}
 
 	keyDown(event) {
 		const direction = this.snake.direction;
