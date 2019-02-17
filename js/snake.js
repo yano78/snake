@@ -8,7 +8,7 @@ class Gameboard {
 	}
 
 	draw() {
-		ctx.clearRect(0,0,this.width * this.block,this.height * this.block);
+		ctx.clearRect(0, 0, this.width * this.block, this.height * this.block);
 	}
 }
 
@@ -96,12 +96,13 @@ class Snake {
 }
 
 class Game {
-	constructor(board, snake, score) {
+	constructor(board, snake, score, options) {
 		this.board = board;
 		this.snake = snake;
 		this.food = null;
 		this.score = score;
 		this.highScore = [];
+		this.options = options;
 	}
 
 	start() {
@@ -122,8 +123,12 @@ class Game {
 
 		gameover.classList.add("hidden");
 
+		let speed;
+
 		while (true) {
 			this.snake.move();
+
+			speed = parseInt(this.options.speed);
 
 			// is snake still alive?
 			if (!this.snake.alive) {
@@ -133,13 +138,13 @@ class Game {
 			if (this.food) {
 				if (this.snake.collision(this.snake.head, this.food)) {
 					this.snake.grow++;
-					this.score.updateScore(1);
+					this.score.updateScore(speed);
 					this.food = null;
 					this.createFood();
 				}
 			}
 
-			await this.wait(200);
+			await this.wait(200 - (speed - 1) * 50);
 		}
 
 		gameover.classList.remove("hidden");
@@ -242,6 +247,18 @@ class Scoreboard {
 	}
 }
 
+class Options {
+	constructor() {
+		this.labyrinth = document.getElementById('labyrinth').value;
+		this.speed = document.getElementById('speed').value;
+	}
+
+	update(el){
+		console.log(el);
+		this[el.name] = el.value;
+	}
+}
+
 const canvas = document.getElementById('snake');
 const ctx = canvas.getContext('2d');
 const width = 30;
@@ -254,7 +271,8 @@ canvas.height = height * block;
 const board = new Gameboard(width, height, block, ctx);
 const snake = new Snake(board);
 const score = new Scoreboard();
-const game = new Game(board, snake, score);
+const opt = new Options();
+const game = new Game(board, snake, score, opt);
 
 document.addEventListener('keydown', game.keyDown.bind(game));
 

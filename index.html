@@ -23,14 +23,24 @@
 	<canvas id="snake"></canvas>
 	<section class="settings">
 		<button id="start" onclick="game.start()">Start</button>
-		Level:
-		<select name="level" id="level">
-			<option value="1">1</option>
-			<option value="2">2</option>
-			<option value="3">3</option>
-			<option value="4">4</option>
-			<option value="5">5</option>
-		</select>
+		<label for="labyrinth">
+			Labyrinth:
+			<select name="labyrinth" id="labyrinth" onchange="opt.update(this)">
+				<option value="1">1</option>
+				<option value="2">2</option>
+				<option value="3">3</option>
+				<option value="4">4</option>
+				<option value="5">5</option>
+			</select>
+		</label>
+		<label for="speed">
+			Speed:
+			<select name="speed" id="speed" onchange="opt.update(this)">
+				<option value="1">1</option>
+				<option value="2">2</option>
+				<option value="3">3</option>
+			</select>
+		</label>
 	</section>
 	<span id="gameover" class="">
 		Game over!!!
