@@ -68,10 +68,18 @@ class Snake {
 		nextHead.x = ((nextHead.x % w) + w) % w;
 		nextHead.y = ((nextHead.y % h) + h) % h;
 
+		// add new segment each time snake eats food
 		if (this.grow > 0) {
 			this.grow--;
 		} else {
 			this.erase(this.body.pop());
+		}
+
+		// check if snake bite itself
+		for (let b of this.body) {
+			if (this.collision(nextHead, b)) {
+				this.alive = false;
+			}
 		}
 
 		this.body.unshift(nextHead);
@@ -100,6 +108,11 @@ class Game {
 		while (true) {
 			this.snake.move();
 
+			// is snake still alive?
+			if (!this.snake.alive) {
+				break;
+			}
+
 			if (this.food) {
 				if (this.snake.collision(this.snake.head, this.food)) {
 					this.snake.grow++;
@@ -111,6 +124,7 @@ class Game {
 
 			await this.wait(200);
 		}
+
 	}
 
 	wait(time) {
@@ -120,8 +134,6 @@ class Game {
 	createFood() {
 		const w = this.board.width;
 		const h = this.board.height;
-		const b = this.board.block;
-		const ctx = this.board.ctx;
 		const color = '#0f0';
 
 		if (!this.food) {
@@ -154,7 +166,7 @@ class Game {
 		ctx.fillRect(this.food.x * b, this.food.y * b, b, b);
 	}
 
-	updateScore(){
+	updateScore() {
 		const score = document.getElementById("score");
 		this.score++;
 		score.innerText = this.score;
