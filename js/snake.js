@@ -19,7 +19,7 @@ class Snake {
 		this.board = board;
 		this.ctx = board.ctx;
 		this.block = board.block;
-		this.body = [{x: 5, y: 5}, {x: 4, y: 5}, {x: 3, y: 5}, {x: 2, y: 5}, {x: 1, y: 5}];
+		this.body = [{x: 5, y: 5}];
 		this.color = '#888';
 		this.direction = 'right';
 		this.grow = 0;
@@ -99,18 +99,20 @@ class Snake {
 }
 
 class Game {
-	constructor(board, snake) {
+	constructor(board, snake, score) {
 		this.board = board;
 		this.snake = snake;
 		this.food = null;
-		this.score = 0;
+		this.score = score;
 		this.highScore = [];
 	}
 
 	start() {
 		this.board.draw();
 		this.snake.alive = true;
-		this.score = 0;
+		this.score.score = 0;
+		this.score.updateScore(0);
+		this.score.updateHighScore();
 		this.food = null;
 		this.snake.body = [{x: 5, y: 5}];
 		this.snake.direction = 'right';
@@ -134,7 +136,7 @@ class Game {
 			if (this.food) {
 				if (this.snake.collision(this.snake.head, this.food)) {
 					this.snake.grow++;
-					this.updateScore();
+					this.score.updateScore(1);
 					this.food = null;
 					this.createFood();
 				}
@@ -144,6 +146,7 @@ class Game {
 		}
 
 		gameover.classList.remove("hidden");
+		this.score.updateHighScore();
 	}
 
 	wait(time) {
@@ -185,12 +188,6 @@ class Game {
 		ctx.fillRect(this.food.x * b, this.food.y * b, b, b);
 	}
 
-	updateScore() {
-		const score = document.getElementById("score");
-		this.score++;
-		score.innerText = this.score;
-	}
-
 	keyDown(event) {
 		const direction = this.snake.direction;
 		switch (event.key.toLowerCase()) {
@@ -221,6 +218,33 @@ class Game {
 	}
 }
 
+class Scoreboard {
+	constructor() {
+		this.highScore = new Array(5).fill(0);
+		this.score = 0;
+	}
+
+	updateScore(s) {
+		const scoreElem = document.getElementById("score");
+		this.score += s;
+		scoreElem.innerText = this.score;
+	}
+
+	updateHighScore() {
+		const highScoreElem = document.getElementById("highScore");
+		this.highScore[this.highScore.length] = this.score;
+		this.highScore.sort((a, b) => a - b);
+		this.highScore = this.highScore.slice(-5).reverse();
+
+		let highScoreHTML = '<ol>';
+		for (let s of this.highScore) {
+			highScoreHTML += `<li>${s}</li>`;
+		}
+		highScoreHTML += '</ol>';
+		highScoreElem.innerHTML = highScoreHTML;
+	}
+}
+
 const canvas = document.getElementById('snake');
 const ctx = canvas.getContext('2d');
 const width = 30;
@@ -232,7 +256,8 @@ canvas.height = height * block;
 
 const board = new Gameboard(width, height, block, ctx);
 const snake = new Snake(board);
-const game = new Game(board, snake);
+const score = new Scoreboard();
+const game = new Game(board, snake, score);
 
 document.addEventListener('keydown', game.keyDown.bind(game));
 
