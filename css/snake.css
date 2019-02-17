@@ -12,9 +12,12 @@ ul, ol, li {
 .gameboard {
 	position: relative;
 }
+
 .gameboard canvas {
 	border: 1px solid #000;
+	background-color: #000;
 }
+
 .scoreboard {
 	font: normal 2em VT323, monospace;
 	border: 2px solid #000;
@@ -40,6 +43,7 @@ ul, ol, li {
 	top: 50px;
 	left: 200px;
 }
+
 .hidden {
 	display: none;
 }

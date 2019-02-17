@@ -4,13 +4,11 @@ class Gameboard {
 		this.height = height;
 		this.block = block;
 		this.ctx = ctx;
-		this.bgColor = '#ccc';
 		this.wallColor = '#000';
 	}
 
 	draw() {
-		this.ctx.fillStyle = this.bgColor;
-		this.ctx.fillRect(0, 0, this.width * this.block, this.height * this.block);
+		ctx.clearRect(0,0,this.width * this.block,this.height * this.block);
 	}
 }
 
@@ -20,7 +18,7 @@ class Snake {
 		this.ctx = board.ctx;
 		this.block = board.block;
 		this.body = [{x: 5, y: 5}];
-		this.color = '#888';
+		this.color = '#fff';
 		this.direction = 'right';
 		this.grow = 0;
 		this.newDirection = null;
@@ -41,8 +39,7 @@ class Snake {
 
 	erase(point) {
 		const b = this.block;
-		this.ctx.fillStyle = "#ccc";
-		this.ctx.fillRect(point.x * b, point.y * b, b, b);
+		this.ctx.clearRect(point.x * b, point.y * b, b, b);
 	}
 
 	move() {
