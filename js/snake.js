@@ -19,7 +19,7 @@ class Snake {
 		this.board = board;
 		this.ctx = board.ctx;
 		this.block = board.block;
-		this.body = [{x: 5, y: 5}];
+		this.body = [{x: 5, y: 5}, {x: 4, y: 5}, {x: 3, y: 5}, {x: 2, y: 5}, {x: 1, y: 5}];
 		this.color = '#888';
 		this.direction = 'right';
 		this.grow = 0;
@@ -49,6 +49,11 @@ class Snake {
 		let nextHead = this.head;
 		const w = this.board.width;
 		const h = this.board.height;
+
+		if (this.newDirection) {
+			this.direction = this.newDirection;
+			this.newDirection = null;
+		}
 
 		switch (this.direction) {
 			case 'up':
@@ -102,9 +107,22 @@ class Game {
 		this.highScore = [];
 	}
 
-	async run() {
+	start() {
 		this.board.draw();
+		this.snake.alive = true;
+		this.score = 0;
+		this.food = null;
+		this.snake.body = [{x: 5, y: 5}];
+		this.snake.direction = 'right';
 		this.createFood();
+		this.run();
+	}
+
+	async run() {
+		const gameover = document.getElementById("gameover");
+
+		gameover.classList.add("hidden");
+
 		while (true) {
 			this.snake.move();
 
@@ -125,6 +143,7 @@ class Game {
 			await this.wait(200);
 		}
 
+		gameover.classList.remove("hidden");
 	}
 
 	wait(time) {
@@ -178,25 +197,25 @@ class Game {
 			case 'w' :
 			case 'arrowup' :
 				if (direction !== 'down') {
-					this.snake.direction = 'up';
+					this.snake.newDirection = 'up';
 				}
 				break;
 			case 's' :
 			case 'arrowdown' :
 				if (direction !== 'up') {
-					this.snake.direction = 'down';
+					this.snake.newDirection = 'down';
 				}
 				break;
 			case 'a':
 			case 'arrowleft' :
 				if (direction !== 'right') {
-					this.snake.direction = 'left';
+					this.snake.newDirection = 'left';
 				}
 				break;
 			case 'd':
 			case 'arrowright':
 				if (direction !== 'left') {
-					this.snake.direction = 'right';
+					this.snake.newDirection = 'right';
 				}
 		}
 	}
@@ -217,4 +236,4 @@ const game = new Game(board, snake);
 
 document.addEventListener('keydown', game.keyDown.bind(game));
 
-game.run();
+game.start();

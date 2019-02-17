@@ -10,7 +10,7 @@ ul, ol, li {
 }
 
 .gameboard {
-
+	position: relative;
 }
 .gameboard canvas {
 	border: 1px solid #000;
@@ -29,4 +29,17 @@ ul, ol, li {
 .scoreboard h2 {
 	font-size: 1em;
 	text-transform: uppercase;
+}
+
+#gameover {
+	font: normal 2em VT323, monospace;
+	color: #fff;
+	background-color: #f00;
+	padding: 1em;
+	position: absolute;
+	top: 50px;
+	left: 200px;
+}
+.hidden {
+	display: none;
 }

@@ -28,6 +28,7 @@
 	</section>
 	<canvas id="snake"></canvas>
 	<section class="settings">
+		<button id="start" onclick="game.start()">Start</button>
 		Level:
 		<select name="level" id="level">
 			<option value="1">1</option>
@@ -36,8 +37,10 @@
 			<option value="4">4</option>
 			<option value="5">5</option>
 		</select>
-
 	</section>
+	<span id="gameover" class="">
+		Game over!!!
+	</span>
 </section>
 <script src="js/snake.js"></script>
 </body>
