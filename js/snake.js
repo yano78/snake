@@ -7,10 +7,25 @@ class Gameboard {
 		this.wallColor = '#555';
 		this.levels = [
 			[],
-			[{x1: 9, y1: 10, x2: 13, y2: 1}],
-			[{x1: 9, y1: 10, x2: 13, y2: 1}, {x1: 15, y1: 5, x2: 1, y2: 11}],
-			[{x1: 9, y1: 10, x2: 13, y2: 1}, {x1: 15, y1: 5, x2: 1, y2: 11}],
-			[]
+			[{x1: 10, y1: 15, x2: 31, y2: 1}],
+			[{x1: 10, y1: 15, x2: 31, y2: 1}, {x1: 25, y1: 8, x2: 1, y2: 15}],
+			[
+				{x1: 10, y1: 8, x2: 1, y2: 15},
+				{x1: 40, y1: 8, x2: 1, y2: 15},
+				{x1: 25, y1: 8, x2: 1, y2: 15},
+				{x1: 14, y1: 15, x2: 8, y2: 1},
+				{x1: 29, y1: 15, x2: 8, y2: 1}],
+			[
+				{x1: 10, y1: 8, x2: 1, y2: 15},
+				{x1: 40, y1: 8, x2: 1, y2: 15},
+				{x1: 25, y1: 8, x2: 1, y2: 15},
+				{x1: 14, y1: 15, x2: 8, y2: 1},
+				{x1: 29, y1: 15, x2: 8, y2: 1},
+				{x1: 0, y1: 0, x2: 50, y2: 1},
+				{x1: 0, y1: 29, x2: 50, y2: 1},
+				{x1: 0, y1: 0, x2: 1, y2: 29},
+				{x1: 49, y1: 0, x2: 1, y2: 29}
+			]
 		];
 		this.walls = [];
 	}
@@ -318,13 +333,12 @@ class Options {
 	}
 }
 
-
 // initial settings
 const canvas = document.getElementById('snake');
 const ctx = canvas.getContext('2d');
-const width = 30;
-const height = 20;
-const block = 14;
+const width = 50;
+const height = 30;
+const block = 10;
 
 canvas.width = width * block;
 canvas.height = height * block;
