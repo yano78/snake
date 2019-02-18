@@ -52,7 +52,7 @@ class Snake {
 		this.board = board;
 		this.ctx = board.ctx;
 		this.block = board.block;
-		this.body = [{x: 5, y: 5}];
+		this.body = [{x: 5, y: 5}, {x: 4, y: 5}];
 		this.color = '#fff';
 		this.direction = 'right';
 		this.grow = 0;
@@ -158,9 +158,10 @@ class Game {
 		this.score.updateScore(0);
 		this.score.updateHighScore();
 		this.food = null;
-		this.snake.body = [{x: 5, y: 5}];
+		this.snake.body = [{x: 5, y: 5}, {x: 4, y: 5}];
 		this.snake.direction = 'right';
 		this.createFood();
+		this.board.ctx.canvas.focus();
 		this.run();
 	}
 
@@ -328,4 +329,4 @@ const game = new Game(board, snake, score, opt);
 
 document.addEventListener('keydown', game.keyDown.bind(game));
 
-game.start();
+// game.start();

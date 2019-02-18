@@ -17,7 +17,15 @@
 		Score: <span id="score">0</span>
 		<section id="highScoreTable">
 			<h2>Highscore</h2>
-			<span id="highScore"></span>
+			<div id="highScore">
+				<ol>
+					<li>0</li>
+					<li>0</li>
+					<li>0</li>
+					<li>0</li>
+					<li>0</li>
+				</ol>
+			</div>
 		</section>
 	</section>
 	<canvas id="snake"></canvas>
@@ -39,10 +47,11 @@
 				<option value="1">1</option>
 				<option value="2">2</option>
 				<option value="3">3</option>
+				<option value="4">4</option>
 			</select>
 		</label>
 	</section>
-	<span id="gameover" class="">
+	<span id="gameover" class="hidden">
 		Game over!!!
 	</span>
 </section>
