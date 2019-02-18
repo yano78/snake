@@ -102,6 +102,9 @@ class Snake {
 				break;
 		}
 
+		// snake may go thru borders of the gameboard
+		// since modulo doesn't work well in this case (negative numbers)
+		// we need do a little trick
 		nextHead.x = ((nextHead.x % w) + w) % w;
 		nextHead.y = ((nextHead.y % h) + h) % h;
 
@@ -112,7 +115,7 @@ class Snake {
 			this.erase(this.body.pop());
 		}
 
-		// check if snake bite itself
+		// check if snake bites itself
 		for (let b of this.body) {
 			if (this.collision(nextHead, b)) {
 				this.alive = false;
@@ -146,11 +149,11 @@ class Game {
 		this.snake = snake;
 		this.food = null;
 		this.score = score;
-		this.highScore = [];
 		this.options = options;
 	}
 
 	start() {
+		// clear the board, set defaults and options
 		this.board.clear();
 		this.board.drawWalls(this.options.labyrinth);
 		this.snake.alive = true;
@@ -173,6 +176,7 @@ class Game {
 		const speed = this.options.speed;
 		const level = this.options.labyrinth;
 
+		// points depends on level and speed of snake
 		const points = 1 * speed * level;
 
 		while (true) {
@@ -246,6 +250,8 @@ class Game {
 
 	keyDown(event) {
 		const direction = this.snake.direction;
+
+		// Use arrows and WSAD keys to move snake
 		switch (event.key.toLowerCase()) {
 			case 'w' :
 			case 'arrowup' :
@@ -290,7 +296,7 @@ class Scoreboard {
 		const highScoreElem = document.getElementById("highScore");
 		this.highScore[this.highScore.length] = this.score;
 		this.highScore.sort((a, b) => a - b);
-		this.highScore = this.highScore.slice(-5).reverse();
+		this.highScore = this.highScore.slice(-5).reverse(); // get 5 highest scores
 
 		let highScoreHTML = '<ol>';
 		for (let s of this.highScore) {
@@ -312,6 +318,8 @@ class Options {
 	}
 }
 
+
+// initial settings
 const canvas = document.getElementById('snake');
 const ctx = canvas.getContext('2d');
 const width = 30;
@@ -321,8 +329,8 @@ const block = 14;
 canvas.width = width * block;
 canvas.height = height * block;
 
-const board = new Gameboard(width, height, block, ctx);
-const snake = new Snake(board);
+const board = new Gameboard(width, height, block, ctx); // init board
+const snake = new Snake(board); // add snake to board
 const score = new Scoreboard();
 const opt = new Options();
 const game = new Game(board, snake, score, opt);
