@@ -28,6 +28,12 @@ class Gameboard {
 			]
 		];
 		this.walls = [];
+		// powerups modifiers
+		this.speedM = 0;
+		this.pointsM = 1;
+		this.noclip = false;
+
+		this.powerup = null; // {isActive: true, x: 1, y: 1, type: 'cut'}
 	}
 
 	clear() {
@@ -126,6 +132,12 @@ class Snake {
 		// add new segment each time snake eats food
 		if (this.grow > 0) {
 			this.grow--;
+		} else if (this.grow < 0) {
+			this.grow++;
+			if (this.body.length > 2) {
+				this.erase(this.body.pop());
+				this.erase(this.body.pop());
+			}
 		} else {
 			this.erase(this.body.pop());
 		}
@@ -139,7 +151,7 @@ class Snake {
 		}
 
 		// check if snake hits the wall
-		if (this.board.walls.length !== 0) {
+		if (this.board.walls.length !== 0 && !this.board.noclip) {
 			for (let w of this.board.walls) {
 				if (this.collision(nextHead, w)) {
 					this.alive = false;
@@ -147,6 +159,7 @@ class Snake {
 				}
 			}
 		}
+
 		this.body.unshift(nextHead);
 
 		this.draw();
@@ -163,8 +176,17 @@ class Game {
 		this.board = board;
 		this.snake = snake;
 		this.food = null;
+		this.flag = 0; // powerups flag
 		this.score = score;
 		this.options = options;
+		this.powerups = [
+			{type: 'cut', label: '-'},
+			{type: 'extend', label: '+'},
+			{type: 'faster', label: '>'},
+			{type: 'slower', label: '<'},
+			{type: 'multiply', label: '*'},
+			{type: 'noclip', label: '|'}
+		];
 	}
 
 	start() {
@@ -188,13 +210,14 @@ class Game {
 
 		gameover.classList.add("hidden");
 
-		const speed = this.options.speed;
 		const level = this.options.labyrinth;
-
-		// points depends on level and speed of snake
-		const points = 1 * speed * level;
+		const powerupTime = this.options.powerupTime;
+		const powerupVal = this.options.powerupVal;
+		const speed = this.options.speed;
+		const points = speed + level - 1;
 
 		while (true) {
+			this.board.drawWalls(level);
 			this.snake.move();
 
 			// is snake still alive?
@@ -202,24 +225,73 @@ class Game {
 				break;
 			}
 
+			console.log('speed: %i; M: %i; points: %i; M: %i', speed, this.board.speedM, points, this.board.pointsM);
+
+			// check if snake eaten food
 			if (this.food) {
 				if (this.snake.collision(this.snake.head, this.food)) {
 					this.snake.grow++;
-					this.score.updateScore(points);
+					this.score.updateScore(points * this.board.pointsM);
+					this.flag++;
 					this.food = null;
 					this.createFood();
+
+					if (this.flag === 1) {
+						this.createPowerup();
+						this.flag = 0;
+					}
 				}
 			}
 
-			await this.wait(200 - (speed - 1) * 50);
+			// check if snake eaten powerup
+			if (this.board.powerup && !this.board.powerup.isActive) {
+				if (this.snake.collision(this.snake.head, this.board.powerup)) {
+					this.board.powerup.isActive = true;
+					switch (this.board.powerup.type) {
+						// one time power ups
+						case 'cut':
+							this.snake.grow -= powerupVal;
+							this.board.powerup = null;
+							break;
+						case 'extend':
+							this.snake.grow += powerupVal;
+							this.board.powerup = null;
+							break;
+						// timed power ups
+						case 'faster':
+							this.board.speedM = powerupVal;
+							break;
+						case 'slower':
+							this.board.speedM = -powerupVal;
+							break;
+						case 'multiply':
+							this.board.pointsM = powerupVal;
+							break;
+						case 'noclip':
+							this.board.noclip = true;
+							break;
+					}
+					this.wait(powerupTime * 1000).then(() => this.resetPowerups());
+				}
+			}
+
+			await this.wait(200 - ((speed - 1) * 50) - (this.board.speedM * 10));
 		}
 
-		gameover.classList.remove("hidden");
+		gameover.classList.remove('hidden');
 		this.score.updateHighScore();
 	}
 
 	wait(time) {
 		return new Promise(resolve => setTimeout(resolve, time));
+	}
+
+	resetPowerups() {
+		console.log("REsET");
+		this.board.powerup = null;
+		this.board.speedM = 0;
+		this.board.pointsM = 1;
+		this.board.noclip = false;
 	}
 
 	createFood() {
@@ -255,12 +327,51 @@ class Game {
 		}
 	}
 
-	drawFood(food, color) {
+	drawFood(food, color, label = null) {
 		const b = this.board.block;
 		const ctx = this.board.ctx;
 
 		ctx.fillStyle = color;
-		ctx.fillRect(this.food.x * b, this.food.y * b, b, b);
+		ctx.fillRect(food.x * b, food.y * b, b, b);
+		if (food.label) {
+			ctx.fillStyle = '#fff';
+			ctx.font = '10px VT323';
+			ctx.fillText(food.label, food.x * b + (b / 4), food.y * b + (b / 1.3));
+		}
+	}
+
+	createPowerup() {
+		const w = this.board.width;
+		const h = this.board.height;
+		let powerup = {};
+
+		if (!this.board.powerup) {
+
+			let collideFlag = true;
+
+			while (collideFlag) {
+				collideFlag = false;
+				const x = Math.floor(Math.random() * w);
+				const y = Math.floor(Math.random() * h);
+				const t = Math.floor(Math.random() * this.powerups.length);
+				powerup = {x: x, y: y, ...this.powerups[t]};
+
+				for (let s of this.snake.body) {
+					if (this.snake.collision(s, powerup)) {
+						collideFlag = true;
+					}
+				}
+
+				for (let w of this.board.walls) {
+					if (this.snake.collision(w, powerup)) {
+						collideFlag = true;
+					}
+				}
+			}
+			this.board.powerup = {isActive: false, ...powerup};
+			this.drawFood(powerup, '#f00');
+			console.log(powerup);
+		}
 	}
 
 	keyDown(event) {
@@ -326,6 +437,8 @@ class Options {
 	constructor() {
 		this.labyrinth = parseInt(document.getElementById('labyrinth').value);
 		this.speed = parseInt(document.getElementById('speed').value);
+		this.powerupTime = parseInt(document.getElementById('powerupTime').value);
+		this.powerupVal = parseInt(document.getElementById('powerupVal').value);
 	}
 
 	update(el) {

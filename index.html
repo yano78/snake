@@ -27,6 +27,7 @@
 				</ol>
 			</div>
 		</section>
+		Timer: <span id="timer">0</span>
 	</section>
 	<canvas id="snake"></canvas>
 	<section class="settings">
@@ -48,6 +49,26 @@
 				<option value="2">2</option>
 				<option value="3">3</option>
 				<option value="4">4</option>
+			</select>
+		</label>
+		<label for="powerupTime">
+			Powerups time:
+			<select name="powerupTime" id="powerupTime" onchange="opt.update(this)">
+				<option value="5">5</option>
+				<option value="10">10</option>
+				<option value="15">15</option>
+				<option value="20">20</option>
+				<option value="25">25</option>
+			</select>
+		</label>
+		<label for="powerupVal">
+			Powerups value:
+			<select name="powerupVal" id="powerupVal" onchange="opt.update(this)">
+				<option value="1">1</option>
+				<option value="2">2</option>
+				<option value="3">3</option>
+				<option value="4">4</option>
+				<option value="5">5</option>
 			</select>
 		</label>
 	</section>
