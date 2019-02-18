@@ -4,11 +4,46 @@ class Gameboard {
 		this.height = height;
 		this.block = block;
 		this.ctx = ctx;
-		this.wallColor = '#000';
+		this.wallColor = '#555';
+		this.levels = [
+			[],
+			[{x1: 9, y1: 10, x2: 13, y2: 1}],
+			[{x1: 9, y1: 10, x2: 13, y2: 1}, {x1: 15, y1: 5, x2: 1, y2: 11}],
+			[{x1: 9, y1: 10, x2: 13, y2: 1}, {x1: 15, y1: 5, x2: 1, y2: 11}],
+			[]
+		];
+		this.walls = [];
 	}
 
-	draw() {
+	clear() {
 		ctx.clearRect(0, 0, this.width * this.block, this.height * this.block);
+		this.walls = [];
+	}
+
+	draw(x, y, color) {
+		const b = this.block;
+		this.ctx.fillStyle = color;
+		this.ctx.fillRect(x * b, y * b, b, b);
+	}
+
+	drawWalls(level) {
+		// get walls for selected level
+		const l = this.levels[level - 1];
+		const b = this.block;
+		this.ctx.fillStyle = this.wallColor;
+
+		// draw walls and add walls element to array for collision check
+		for (let w of l) {
+			// w.x1, w.y1 are starting points
+			// w.x2 is the width of the wall
+			// w.y2 is the height of the wall
+			this.ctx.fillRect(w.x1 * b, w.y1 * b, w.x2 * b, w.y2 * b);
+			for (let a = w.x1; a < w.x1 + w.x2; a++) {
+				for (let b = w.y1; b < w.y1 + w.y2; b++) {
+					this.walls.push({x: a, y: b});
+				}
+			}
+		}
 	}
 }
 
@@ -81,9 +116,19 @@ class Snake {
 		for (let b of this.body) {
 			if (this.collision(nextHead, b)) {
 				this.alive = false;
+				return;
 			}
 		}
 
+		// check if snake hits the wall
+		if (this.board.walls.length !== 0) {
+			for (let w of this.board.walls) {
+				if (this.collision(nextHead, w)) {
+					this.alive = false;
+					return;
+				}
+			}
+		}
 		this.body.unshift(nextHead);
 
 		this.draw();
@@ -106,7 +151,8 @@ class Game {
 	}
 
 	start() {
-		this.board.draw();
+		this.board.clear();
+		this.board.drawWalls(this.options.labyrinth);
 		this.snake.alive = true;
 		this.score.score = 0;
 		this.score.updateScore(0);
@@ -123,12 +169,13 @@ class Game {
 
 		gameover.classList.add("hidden");
 
-		let speed;
+		const speed = this.options.speed;
+		const level = this.options.labyrinth;
+
+		const points = 1 * speed * level;
 
 		while (true) {
 			this.snake.move();
-
-			speed = parseInt(this.options.speed);
 
 			// is snake still alive?
 			if (!this.snake.alive) {
@@ -138,7 +185,7 @@ class Game {
 			if (this.food) {
 				if (this.snake.collision(this.snake.head, this.food)) {
 					this.snake.grow++;
-					this.score.updateScore(speed);
+					this.score.updateScore(points);
 					this.food = null;
 					this.createFood();
 				}
@@ -164,7 +211,7 @@ class Game {
 
 			let foodCollideFlag = true;
 
-			// avoid creating food on snakes body
+			// avoid creating food on snakes body or walls
 			while (foodCollideFlag) {
 				foodCollideFlag = false;
 				const x = Math.floor(Math.random() * w);
@@ -177,7 +224,13 @@ class Game {
 					}
 				}
 
+				for (let w of this.board.walls) {
+					if (this.snake.collision(w, this.food)) {
+						foodCollideFlag = true;
+					}
+				}
 			}
+
 			this.drawFood(this.food, color);
 		}
 	}
@@ -249,13 +302,12 @@ class Scoreboard {
 
 class Options {
 	constructor() {
-		this.labyrinth = document.getElementById('labyrinth').value;
-		this.speed = document.getElementById('speed').value;
+		this.labyrinth = parseInt(document.getElementById('labyrinth').value);
+		this.speed = parseInt(document.getElementById('speed').value);
 	}
 
-	update(el){
-		console.log(el);
-		this[el.name] = el.value;
+	update(el) {
+		this[el.name] = parseInt(el.value);
 	}
 }
 
