@@ -41,12 +41,6 @@ class Gameboard {
 		this.walls = [];
 	}
 
-	draw(x, y, color) {
-		const b = this.block;
-		this.ctx.fillStyle = color;
-		this.ctx.fillRect(x * b, y * b, b, b);
-	}
-
 	drawWalls(level) {
 		// get walls for selected level
 		const l = this.levels[level - 1];
@@ -168,7 +162,6 @@ class Snake {
 	collision(a, b) {
 		return (a.x === b.x && a.y === b.y);
 	}
-
 }
 
 class Game {
@@ -327,7 +320,7 @@ class Game {
 		}
 	}
 
-	drawFood(food, color, label = null) {
+	drawFood(food, color) {
 		const b = this.board.block;
 		const ctx = this.board.ctx;
 
