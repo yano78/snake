@@ -138,7 +138,7 @@ class Snake {
 
 		// check if snake bites itself
 		for (let b of this.body) {
-			if (this.collision(nextHead, b)) {
+			if (Snake.collision(nextHead, b)) {
 				this.alive = false;
 				return;
 			}
@@ -147,7 +147,7 @@ class Snake {
 		// check if snake hits the wall
 		if (this.board.walls.length !== 0 && !this.board.noclip) {
 			for (let w of this.board.walls) {
-				if (this.collision(nextHead, w)) {
+				if (Snake.collision(nextHead, w)) {
 					this.alive = false;
 					return;
 				}
@@ -159,7 +159,7 @@ class Snake {
 		this.draw();
 	}
 
-	collision(a, b) {
+	static collision(a, b) {
 		return (a.x === b.x && a.y === b.y);
 	}
 }
@@ -213,16 +213,13 @@ class Game {
 			this.board.drawWalls(level);
 			this.snake.move();
 
-			// is snake still alive?
 			if (!this.snake.alive) {
 				break;
 			}
 
-			console.log('speed: %i; M: %i; points: %i; M: %i', speed, this.board.speedM, points, this.board.pointsM);
-
 			// check if snake eaten food
 			if (this.food) {
-				if (this.snake.collision(this.snake.head, this.food)) {
+				if (Snake.collision(this.snake.head, this.food)) {
 					this.snake.grow++;
 					this.score.updateScore(points * this.board.pointsM);
 					this.flag++;
@@ -238,7 +235,7 @@ class Game {
 
 			// check if snake eaten powerup
 			if (this.board.powerup && !this.board.powerup.isActive) {
-				if (this.snake.collision(this.snake.head, this.board.powerup)) {
+				if (Snake.collision(this.snake.head, this.board.powerup)) {
 					this.board.powerup.isActive = true;
 					switch (this.board.powerup.type) {
 						// one time power ups
@@ -253,23 +250,25 @@ class Game {
 						// timed power ups
 						case 'faster':
 							this.board.speedM = powerupVal;
+							this.setTimer(powerupTime);
 							break;
 						case 'slower':
 							this.board.speedM = -powerupVal;
+							this.setTimer(powerupTime);
 							break;
 						case 'multiply':
 							this.board.pointsM = powerupVal;
+							this.setTimer(powerupTime);
 							break;
 						case 'noclip':
 							this.board.noclip = true;
+							this.setTimer(powerupTime);
 							break;
 					}
 					this.wait(powerupTime * 1000).then(() => this.resetPowerups());
-					this.setTimer(powerupTime);
 				}
 			}
-
-			await this.wait(200 - ((speed - 1) * 50) - (this.board.speedM * 10));
+			await this.wait(200 - ((speed - 1) * 50) - (this.board.speedM * 30));
 		}
 
 		gameoverEl.classList.remove('hidden');
@@ -283,7 +282,7 @@ class Game {
 	setTimer(time) {
 		const timerEl = document.getElementById('timer');
 		timerEl.innerText = time--;
-		const timer = setInterval(function(){
+		const timer = setInterval(function () {
 			if (time <= 0) {
 				clearInterval(timer);
 			}
@@ -292,7 +291,6 @@ class Game {
 	}
 
 	resetPowerups() {
-		console.log("REsET");
 		this.board.powerup = null;
 		this.board.speedM = 0;
 		this.board.pointsM = 1;
@@ -316,13 +314,13 @@ class Game {
 				this.food = {x, y};
 
 				for (let s of this.snake.body) {
-					if (this.snake.collision(s, this.food)) {
+					if (Snake.collision(s, this.food)) {
 						foodCollideFlag = true;
 					}
 				}
 
 				for (let w of this.board.walls) {
-					if (this.snake.collision(w, this.food)) {
+					if (Snake.collision(w, this.food)) {
 						foodCollideFlag = true;
 					}
 				}
@@ -340,7 +338,7 @@ class Game {
 		ctx.fillRect(food.x * b, food.y * b, b, b);
 		if (food.label) {
 			ctx.fillStyle = '#fff';
-			ctx.font = this.board.block + 'px VT323';
+			ctx.font = 1 + this.board.block + 'px VT323';
 			ctx.fillText(food.label, food.x * b + (b / 4), food.y * b + (b / 1.3));
 		}
 	}
@@ -358,24 +356,25 @@ class Game {
 				collideFlag = false;
 				const x = Math.floor(Math.random() * w);
 				const y = Math.floor(Math.random() * h);
-				const t = Math.floor(Math.random() * this.powerups.length);
+				// powerup type - skip 'noclip' powerup if there is no walls on board
+				const t = Math.floor(Math.random() * (this.board.walls ? this.powerups.length : this.powerups.length - 1));
 				powerup = {x: x, y: y, ...this.powerups[t]};
 
+				// check if powerup is generated on snakes body or on walls
 				for (let s of this.snake.body) {
-					if (this.snake.collision(s, powerup)) {
+					if (Snake.collision(s, powerup)) {
 						collideFlag = true;
 					}
 				}
 
 				for (let w of this.board.walls) {
-					if (this.snake.collision(w, powerup)) {
+					if (Snake.collision(w, powerup)) {
 						collideFlag = true;
 					}
 				}
 			}
 			this.board.powerup = {isActive: false, ...powerup};
 			this.drawFood(powerup, '#f00');
-			console.log(powerup);
 		}
 	}
 
@@ -418,13 +417,13 @@ class Scoreboard {
 	}
 
 	updateScore(s) {
-		const scoreElem = document.getElementById("score");
+		const scoreEl = document.getElementById("score");
 		this.score += s;
-		scoreElem.innerText = this.score;
+		scoreEl.innerText = this.score;
 	}
 
 	updateHighScore() {
-		const highScoreElem = document.getElementById("highScore");
+		const highScoreEl = document.getElementById("highScore");
 		this.highScore[this.highScore.length] = this.score;
 		this.highScore.sort((a, b) => a - b);
 		this.highScore = this.highScore.slice(-5).reverse(); // get 5 highest scores
@@ -434,7 +433,7 @@ class Scoreboard {
 			highScoreHTML += `<li>${s}</li>`;
 		}
 		highScoreHTML += '</ol>';
-		highScoreElem.innerHTML = highScoreHTML;
+		highScoreEl.innerHTML = highScoreHTML;
 	}
 }
 
