@@ -199,9 +199,9 @@ class Game {
 	}
 
 	async run() {
-		const gameover = document.getElementById("gameover");
+		const gameoverEl = document.getElementById("gameover");
 
-		gameover.classList.add("hidden");
+		gameoverEl.classList.add("hidden");
 
 		const level = this.options.labyrinth;
 		const powerupTime = this.options.powerupTime;
@@ -265,18 +265,30 @@ class Game {
 							break;
 					}
 					this.wait(powerupTime * 1000).then(() => this.resetPowerups());
+					this.setTimer(powerupTime);
 				}
 			}
 
 			await this.wait(200 - ((speed - 1) * 50) - (this.board.speedM * 10));
 		}
 
-		gameover.classList.remove('hidden');
+		gameoverEl.classList.remove('hidden');
 		this.score.updateHighScore();
 	}
 
 	wait(time) {
 		return new Promise(resolve => setTimeout(resolve, time));
+	}
+
+	setTimer(time) {
+		const timerEl = document.getElementById('timer');
+		timerEl.innerText = time--;
+		const timer = setInterval(function(){
+			if (time <= 0) {
+				clearInterval(timer);
+			}
+			timerEl.innerText = time--;
+		}, 1000);
 	}
 
 	resetPowerups() {
@@ -328,7 +340,7 @@ class Game {
 		ctx.fillRect(food.x * b, food.y * b, b, b);
 		if (food.label) {
 			ctx.fillStyle = '#fff';
-			ctx.font = '10px VT323';
+			ctx.font = this.board.block + 'px VT323';
 			ctx.fillText(food.label, food.x * b + (b / 4), food.y * b + (b / 1.3));
 		}
 	}
