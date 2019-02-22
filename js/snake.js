@@ -5,6 +5,9 @@ class Gameboard {
 		this.block = block;
 		this.ctx = ctx;
 		this.wallColor = '#555';
+		// define walls for levels
+		// x1, y1 - starting points of wall
+		// x2, y2 - size of wall
 		this.levels = [
 			[],
 			[{x1: 10, y1: 15, x2: 31, y2: 1}],
@@ -27,7 +30,7 @@ class Gameboard {
 				{x1: 49, y1: 0, x2: 1, y2: 29}
 			]
 		];
-		this.walls = [];
+		this.walls = []; // currently active walls
 		// powerups modifiers
 		this.speedM = 0;
 		this.pointsM = 1;
@@ -47,11 +50,7 @@ class Gameboard {
 		const b = this.block;
 		this.ctx.fillStyle = this.wallColor;
 
-		// draw walls and add walls element to array for collision check
 		for (let w of l) {
-			// w.x1, w.y1 are starting points
-			// w.x2 is the width of the wall
-			// w.y2 is the height of the wall
 			this.ctx.fillRect(w.x1 * b, w.y1 * b, w.x2 * b, w.y2 * b);
 			for (let a = w.x1; a < w.x1 + w.x2; a++) {
 				for (let b = w.y1; b < w.y1 + w.y2; b++) {
@@ -123,10 +122,12 @@ class Snake {
 		nextHead.x = ((nextHead.x % w) + w) % w;
 		nextHead.y = ((nextHead.y % h) + h) % h;
 
-		// add new segment each time snake eats food
+		// add new segment(s) each time snake eats food
 		if (this.grow > 0) {
 			this.grow--;
-		} else if (this.grow < 0) {
+		}
+		// remove segment(s) when power up is eaten
+		else if (this.grow < 0) {
 			this.grow++;
 			if (this.body.length > 2) {
 				this.erase(this.body.pop());
@@ -169,7 +170,7 @@ class Game {
 		this.board = board;
 		this.snake = snake;
 		this.food = null;
-		this.flag = 0; // powerups flag
+		this.foodEated = 0; // powerups foodEated
 		this.score = score;
 		this.options = options;
 		this.powerups = [
@@ -189,13 +190,14 @@ class Game {
 		this.snake.alive = true;
 		this.score.score = 0;
 		this.score.updateScore(0);
-		this.score.updateHighScore();
 		this.food = null;
+		this.resetPowerups();
 		this.snake.body = [{x: 5, y: 5}, {x: 4, y: 5}];
 		this.snake.direction = 'right';
 		this.createFood();
 		this.board.ctx.canvas.focus();
 		this.run();
+		document.getElementById('start').disabled = true;
 	}
 
 	async run() {
@@ -210,8 +212,12 @@ class Game {
 		const points = speed + level - 1;
 
 		while (true) {
-			this.board.drawWalls(level);
 			this.snake.move();
+
+			// when 'noclip' powerup is active we need to redraw the walls
+			if (this.board.powerup && this.board.powerup.type === 'noclip') {
+				this.board.drawWalls(level);
+			}
 
 			if (!this.snake.alive) {
 				break;
@@ -222,13 +228,13 @@ class Game {
 				if (Snake.collision(this.snake.head, this.food)) {
 					this.snake.grow++;
 					this.score.updateScore(points * this.board.pointsM);
-					this.flag++;
+					this.foodEated++;
 					this.food = null;
 					this.createFood();
 
-					if (this.flag === 1) {
+					// create new powerup after some amount of eaten food
+					if (this.foodEated % 5 === 0) {
 						this.createPowerup();
-						this.flag = 0;
 					}
 				}
 			}
@@ -268,17 +274,19 @@ class Game {
 					this.wait(powerupTime * 1000).then(() => this.resetPowerups());
 				}
 			}
-			await this.wait(200 - ((speed - 1) * 50) - (this.board.speedM * 30));
+			await this.wait(200 - ((speed - 1) * 50) - (this.board.speedM * 20));
 		}
 
 		gameoverEl.classList.remove('hidden');
 		this.score.updateHighScore();
+		document.getElementById('start').disabled = false;
 	}
 
 	wait(time) {
 		return new Promise(resolve => setTimeout(resolve, time));
 	}
 
+	// powerups timer
 	setTimer(time) {
 		const timerEl = document.getElementById('timer');
 		timerEl.innerText = time--;
@@ -357,7 +365,7 @@ class Game {
 				const x = Math.floor(Math.random() * w);
 				const y = Math.floor(Math.random() * h);
 				// powerup type - skip 'noclip' powerup if there is no walls on board
-				const t = Math.floor(Math.random() * (this.board.walls ? this.powerups.length : this.powerups.length - 1));
+				const t = Math.floor(Math.random() * (this.board.walls.length ? this.powerups.length : this.powerups.length - 1));
 				powerup = {x: x, y: y, ...this.powerups[t]};
 
 				// check if powerup is generated on snakes body or on walls
@@ -366,7 +374,6 @@ class Game {
 						collideFlag = true;
 					}
 				}
-
 				for (let w of this.board.walls) {
 					if (Snake.collision(w, powerup)) {
 						collideFlag = true;
